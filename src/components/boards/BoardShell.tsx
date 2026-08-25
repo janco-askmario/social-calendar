@@ -9,8 +9,40 @@ import { useDragGhost } from "@/lib/useDragGhost";
 import { positionBetween, sortByPosition } from "@/lib/boards";
 import type { Board, Card, ChecklistItem, EventColour, List } from "@/types";
 
+/**
+ * Finds the list column under the cursor, falling back to the nearest column
+ * by horizontal distance when the cursor is in a gap between columns (or past
+ * the first/last one). Without this, a drop in the ~12px gap between two list
+ * columns would find nothing and silently fail to reorder.
+ */
 function findListCol(clientX: number, clientY: number): HTMLElement | null {
-  return document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>("[data-list-col]") ?? null;
+  const direct = document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>("[data-list-col]");
+  if (direct) return direct;
+
+  const cols = Array.from(document.querySelectorAll<HTMLElement>("[data-list-col]"));
+  if (cols.length === 0) return null;
+
+  let rowTop = Infinity;
+  let rowBottom = -Infinity;
+  for (const col of cols) {
+    const rect = col.getBoundingClientRect();
+    rowTop = Math.min(rowTop, rect.top);
+    rowBottom = Math.max(rowBottom, rect.bottom);
+  }
+  const verticalSlack = 80;
+  if (clientY < rowTop - verticalSlack || clientY > rowBottom + verticalSlack) return null;
+
+  let nearest: HTMLElement | null = null;
+  let nearestDistance = Infinity;
+  for (const col of cols) {
+    const rect = col.getBoundingClientRect();
+    const distance = clientX < rect.left ? rect.left - clientX : clientX > rect.right ? clientX - rect.right : 0;
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = col;
+    }
+  }
+  return nearest;
 }
 
 function findCardEl(clientX: number, clientY: number): HTMLElement | null {
@@ -99,9 +131,14 @@ export function BoardShell({
     },
     onDrop: (id, x, y) => {
       setHoverListId(null);
+      // The card being dragged, or the list it's being dropped into, may have
+      // been deleted by another user mid-drag (via realtime) - bail rather
+      // than writing a stale reference back to the database.
+      if (!cards.some((c) => c.id === id)) return;
       const col = findListCol(x, y);
       if (!col) return;
       const listId = col.dataset.listId!;
+      if (!sortedLists.some((l) => l.id === listId)) return;
       const siblings = (cardsByList[listId] ?? []).filter((c) => c.id !== id);
       const cardEl = findCardEl(x, y);
       let index = siblings.length;
@@ -125,6 +162,9 @@ export function BoardShell({
     },
     onDrop: (id, x, y) => {
       setHoverListId(null);
+      // The list being dragged may have been deleted by another user
+      // mid-drag - bail rather than writing a stale reference back.
+      if (!sortedLists.some((l) => l.id === id)) return;
       const col = findListCol(x, y);
       const siblings = sortedLists.filter((l) => l.id !== id);
       let index = siblings.length;

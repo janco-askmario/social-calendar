@@ -74,6 +74,17 @@ export default function BoardsPage() {
     if (data) setBoards((prev) => (prev.some((b) => b.id === data.id) ? prev : [...prev, data as Board]));
   }
 
+  async function handleDeleteBoard(id: string) {
+    if (!supabase) return;
+    const previous = boards;
+    setBoards((prev) => prev.filter((b) => b.id !== id));
+    const { error: deleteError } = await supabase.from("boards").delete().eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
+      setBoards(previous);
+    }
+  }
+
   if (!supabase) return null;
 
   if (loading) {
@@ -92,6 +103,7 @@ export default function BoardsPage() {
       lists={lists}
       cards={cards}
       onCreateBoard={handleCreateBoard}
+      onDeleteBoard={handleDeleteBoard}
       banner={
         error ? (
           <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">

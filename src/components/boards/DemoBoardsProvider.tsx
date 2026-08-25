@@ -12,6 +12,7 @@ interface DemoBoardsValue {
   checklist: ChecklistItem[];
   createBoard: (name: string) => string;
   renameBoard: (id: string, name: string) => void;
+  deleteBoard: (id: string) => void;
   addList: (boardId: string, name: string) => void;
   renameList: (id: string, name: string) => void;
   deleteList: (id: string) => void;
@@ -49,6 +50,14 @@ export function DemoBoardsProvider({ children }: { children: React.ReactNode }) 
       },
       renameBoard: (id, name) => {
         setBoards((prev) => prev.map((b) => (b.id === id ? { ...b, name } : b)));
+      },
+      deleteBoard: (id) => {
+        setBoards((prev) => prev.filter((b) => b.id !== id));
+        const removedListIds = new Set(lists.filter((l) => l.board_id === id).map((l) => l.id));
+        setLists((prev) => prev.filter((l) => l.board_id !== id));
+        const removedCardIds = new Set(cards.filter((c) => removedListIds.has(c.list_id)).map((c) => c.id));
+        setCards((prev) => prev.filter((c) => !removedListIds.has(c.list_id)));
+        setChecklist((prev) => prev.filter((i) => !removedCardIds.has(i.card_id)));
       },
       addList: (boardId, name) => {
         const now = new Date().toISOString();

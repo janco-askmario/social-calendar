@@ -13,6 +13,7 @@ export function BoardsShell({
   cards,
   banner,
   onCreateBoard,
+  onDeleteBoard,
   basePath = "/app",
 }: {
   userName: string;
@@ -22,6 +23,7 @@ export function BoardsShell({
   cards: Card[];
   banner?: React.ReactNode;
   onCreateBoard: (name: string) => Promise<string | void> | void;
+  onDeleteBoard?: (id: string) => void;
   basePath?: string;
 }) {
   const [creating, setCreating] = useState(false);
@@ -107,6 +109,7 @@ export function BoardsShell({
                 listCount={lists.filter((l) => l.board_id === board.id).length}
                 cardCount={cards.filter((c) => lists.some((l) => l.board_id === board.id && l.id === c.list_id)).length}
                 basePath={basePath}
+                onDelete={onDeleteBoard ? () => onDeleteBoard(board.id) : undefined}
               />
             ))}
           </div>

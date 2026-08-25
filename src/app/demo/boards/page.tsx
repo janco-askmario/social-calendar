@@ -5,7 +5,7 @@ import { BackToHomeBanner } from "@/components/CalendarShell";
 import { useDemoBoards } from "@/components/boards/DemoBoardsProvider";
 
 export default function DemoBoardsPage() {
-  const { boards, lists, cards, createBoard } = useDemoBoards();
+  const { boards, lists, cards, createBoard, deleteBoard } = useDemoBoards();
 
   return (
     <BoardsShell
@@ -17,6 +17,7 @@ export default function DemoBoardsPage() {
       onCreateBoard={(name) => {
         createBoard(name);
       }}
+      onDeleteBoard={deleteBoard}
       banner={<BackToHomeBanner />}
       basePath="/demo"
     />

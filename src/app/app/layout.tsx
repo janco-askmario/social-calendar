@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { FloatingSignOut } from "@/components/FloatingSignOut";
 import type { ReactNode } from "react";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -33,5 +34,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   if (!profile?.approved) redirect("/awaiting-approval");
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <FloatingSignOut />
+    </>
+  );
 }
