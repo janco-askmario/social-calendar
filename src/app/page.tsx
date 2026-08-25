@@ -1,67 +1,89 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const FEATURES = [
+  { title: "Shared calendar", desc: "One live calendar for the whole team — no more spreadsheets or duplicated posts." },
+  { title: "Realtime updates", desc: "Everyone sees changes the instant a teammate schedules or reschedules a post." },
+  { title: "Drag & drop", desc: "Move posts between days or resize their duration right on the grid." },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-background">
+      <header className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+        <span className="text-lg font-extrabold text-foreground">Social Media Calendar</span>
+        <nav className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="text-sm font-semibold text-foreground/80 hover:text-accent px-3 py-2"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="text-sm font-semibold rounded-xl bg-accent text-white px-4 py-2 hover:bg-accent-2 transition"
+          >
+            Sign up
+          </Link>
+        </nav>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6 pt-12 pb-24">
+        <div className="grid lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight text-foreground">
+              Plan your team&apos;s social content, together.
+            </h1>
+            <p className="mt-5 text-lg text-muted max-w-lg">
+              A soft, friendly, drag-and-drop calendar built for content teams — schedule posts
+              across Instagram, Facebook, TikTok and LinkedIn, and see updates from your teammates
+              in realtime.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/signup"
+                className="rounded-xl bg-accent text-white font-semibold px-6 py-3 hover:bg-accent-2 transition"
+              >
+                Get started
+              </Link>
+              <Link
+                href="/demo"
+                className="rounded-xl bg-white border border-black/10 text-foreground font-semibold px-6 py-3 hover:border-accent/40 transition"
+              >
+                Try the demo →
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-panel rounded-[38px] border border-black/5 shadow-sm p-6">
+            <div className="rounded-[24px] bg-background p-5 space-y-3">
+              {[
+                { platform: "Instagram", title: "Behind-the-Scenes", bg: "#FBE3EE", accent: "#F0A9CE" },
+                { platform: "TikTok", title: "Product Teaser", bg: "#DCF3E8", accent: "#93D9B8" },
+                { platform: "LinkedIn", title: "Case Study Post", bg: "#EBE3FB", accent: "#C6A6EF" },
+              ].map((e) => (
+                <div
+                  key={e.platform}
+                  className="flex items-center rounded-2xl overflow-hidden"
+                  style={{ background: e.bg }}
+                >
+                  <div className="flex-1 px-4 py-3">
+                    <p className="text-sm font-bold text-foreground/80">{e.platform}</p>
+                    <p className="text-xs text-foreground/60">{e.title}</p>
+                  </div>
+                  <div className="w-2 self-stretch" style={{ background: e.accent }} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="mt-20 grid sm:grid-cols-3 gap-6">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="bg-panel rounded-[28px] border border-black/5 p-6">
+              <h3 className="font-bold text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm text-muted">{f.desc}</p>
+            </div>
+          ))}
         </div>
       </main>
     </div>
