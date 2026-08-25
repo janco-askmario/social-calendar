@@ -126,16 +126,17 @@ body {
 @keyframes page-glide-in {
   from {
     opacity: 0;
-    transform: translateX(28px) scale(0.99);
-    filter: blur(6px);
+    transform: translateX(64px);
+  }
+  55% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
+    transform: translateX(0);
   }
 }
 
 .page-glide-in {
-  animation: page-glide-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-glide-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
