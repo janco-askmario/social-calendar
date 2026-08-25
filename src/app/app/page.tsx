@@ -3,21 +3,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CalendarShell } from "@/components/CalendarShell";
+import { hasCached, useCachedState } from "@/lib/pageCache";
 import type { EventFormValues } from "@/components/EventForm";
 import type { CalendarEvent, Profile } from "@/types";
 
+const EVENTS_KEY = "calendar-events";
+const MEMBERS_KEY = "calendar-members";
+
 export default function AppCalendarPage() {
   const supabase = createClient();
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [members, setMembers] = useState<Pick<Profile, "id" | "name">[]>([]);
+  const [events, setEvents] = useCachedState<CalendarEvent[]>(EVENTS_KEY, []);
+  const [members, setMembers] = useCachedState<Pick<Profile, "id" | "name">[]>(MEMBERS_KEY, []);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Only block on a full-screen loader for a true cold start - if we already
+  // have cached data from a previous visit, show it immediately and
+  // revalidate quietly in the background instead.
+  const [loading, setLoading] = useState(() => !hasCached(EVENTS_KEY));
   const [error, setError] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!supabase) return;
-    setLoading(true);
     setError(null);
 
     const {
@@ -40,7 +46,7 @@ export default function AppCalendarPage() {
     setMembers(profileRows ?? []);
     if (myProfile) setProfile(myProfile as Profile);
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, setEvents, setMembers]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount
@@ -80,7 +86,7 @@ export default function AppCalendarPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, setEvents]);
 
   async function handleCreate(values: EventFormValues) {
     if (!supabase) return;

@@ -10,15 +10,20 @@ import { positionBetween, sortByPosition } from "@/lib/boards";
 import type { Board, Card, ChecklistItem, EventColour, List } from "@/types";
 
 /**
- * Finds the list column under the cursor, falling back to the nearest column
- * by horizontal distance when the cursor is in a gap between columns (or past
- * the first/last one). Without this, a drop in the ~12px gap between two list
- * columns would find nothing and silently fail to reorder.
+ * Finds which list column the cursor is over, by pure geometry rather than
+ * DOM hit-testing (elementFromPoint/closest). Hit-testing only counts a point
+ * that's literally topmost at those exact pixels, which is unreliable for a
+ * drag target: a short column's empty area below its last card isn't part of
+ * its DOM rect, gaps between columns hit nothing, and the drag ghost or other
+ * overlapping elements can shadow the real target. Instead, every column's
+ * full-height "lane" (its horizontal span, for the whole row's vertical
+ * extent) counts as part of that list - so anywhere within a list's width
+ * registers as that list, edge to edge, not just where content happens to be
+ * rendered. Falls back to nearest column by horizontal distance only when the
+ * cursor is outside every lane (e.g. dropped in the gap past the last list,
+ * or well below the row).
  */
 function findListCol(clientX: number, clientY: number): HTMLElement | null {
-  const direct = document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>("[data-list-col]");
-  if (direct) return direct;
-
   const cols = Array.from(document.querySelectorAll<HTMLElement>("[data-list-col]"));
   if (cols.length === 0) return null;
 
@@ -29,14 +34,23 @@ function findListCol(clientX: number, clientY: number): HTMLElement | null {
     rowTop = Math.min(rowTop, rect.top);
     rowBottom = Math.max(rowBottom, rect.bottom);
   }
-  const verticalSlack = 80;
+  const verticalSlack = 120;
   if (clientY < rowTop - verticalSlack || clientY > rowBottom + verticalSlack) return null;
 
+  // Full-width lane match: a point counts as "in" a column if it's within
+  // that column's horizontal span, regardless of the column's own height.
+  for (const col of cols) {
+    const rect = col.getBoundingClientRect();
+    if (clientX >= rect.left && clientX <= rect.right) return col;
+  }
+
+  // Outside every lane (before the first list or past the last one) -
+  // snap to whichever is closest.
   let nearest: HTMLElement | null = null;
   let nearestDistance = Infinity;
   for (const col of cols) {
     const rect = col.getBoundingClientRect();
-    const distance = clientX < rect.left ? rect.left - clientX : clientX > rect.right ? clientX - rect.right : 0;
+    const distance = clientX < rect.left ? rect.left - clientX : clientX - rect.right;
     if (distance < nearestDistance) {
       nearestDistance = distance;
       nearest = col;

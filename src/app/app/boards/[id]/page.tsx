@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BoardShell } from "@/components/boards/BoardShell";
 import { nextPosition, subscribeToTable } from "@/lib/boards";
+import { hasCached, readCached, useCachedState, writeCached } from "@/lib/pageCache";
 import type { Board, Card, ChecklistItem, List, Profile } from "@/types";
 
 export default function BoardDetailPage() {
@@ -13,14 +14,20 @@ export default function BoardDetailPage() {
   const router = useRouter();
   const boardId = params.id;
 
-  const [board, setBoard] = useState<Board | null>(null);
-  const [lists, setLists] = useState<List[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const boardKey = `board-${boardId}`;
+  const listsKey = `board-${boardId}-lists`;
+  const cardsKey = `board-${boardId}-cards`;
+  const checklistKey = `board-${boardId}-checklist`;
+
+  const [board, setBoard] = useState<Board | null>(() => readCached<Board>(boardKey) ?? null);
+  const [lists, setLists] = useCachedState<List[]>(listsKey, []);
+  const [cards, setCards] = useCachedState<Card[]>(cardsKey, []);
+  const [checklist, setChecklist] = useCachedState<ChecklistItem[]>(checklistKey, []);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !hasCached(boardKey));
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const userIdRef = useRef<string | null>(null);
 
   const listIdsRef = useRef<Set<string>>(new Set());
   const cardIdsRef = useRef<Set<string>>(new Set());
@@ -35,12 +42,12 @@ export default function BoardDetailPage() {
 
   const loadData = useCallback(async () => {
     if (!supabase) return;
-    setLoading(true);
     setError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    userIdRef.current = user?.id ?? null;
 
     const [{ data: boardRow, error: boardError }, { data: listRows }, { data: myProfile }] = await Promise.all([
       supabase.from("boards").select("*").eq("id", boardId).single(),
@@ -54,6 +61,7 @@ export default function BoardDetailPage() {
       return;
     }
     setBoard(boardRow as Board);
+    writeCached(boardKey, boardRow as Board);
     const listData = (listRows as List[]) ?? [];
     setLists(listData);
     if (myProfile) setProfile(myProfile as Profile);
@@ -75,7 +83,8 @@ export default function BoardDetailPage() {
       setChecklist([]);
     }
     setLoading(false);
-  }, [supabase, boardId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- boardKey is derived from boardId, already a dep
+  }, [supabase, boardId, setLists, setCards, setChecklist]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount
@@ -92,7 +101,9 @@ export default function BoardDetailPage() {
           setNotFound(true);
           return;
         }
-        setBoard(payload.new as Board);
+        const row = payload.new as Board;
+        setBoard(row);
+        writeCached(boardKey, row);
       })
       .subscribe();
 
@@ -118,28 +129,39 @@ export default function BoardDetailPage() {
       supabase.removeChannel(cardsChannel);
       supabase.removeChannel(checklistChannel);
     };
-  }, [supabase, boardId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- boardKey is derived from boardId, already a dep
+  }, [supabase, boardId, setLists, setCards, setChecklist]);
 
   async function handleRenameBoard(name: string) {
     if (!supabase || !board) return;
-    setBoard({ ...board, name });
+    const next = { ...board, name };
+    setBoard(next);
+    writeCached(boardKey, next);
     const { error: updateError } = await supabase.from("boards").update({ name }).eq("id", board.id);
     if (updateError) setError(updateError.message);
   }
 
   async function handleAddList(name: string) {
     if (!supabase) return;
+    const tempId = crypto.randomUUID();
+    const now = new Date().toISOString();
     const position = nextPosition(lists);
+    const optimistic: List = { id: tempId, board_id: boardId, name, position, created_at: now, updated_at: now };
+    setLists((prev) => [...prev, optimistic]);
+
     const { data, error: insertError } = await supabase
       .from("lists")
       .insert({ board_id: boardId, name, position })
       .select()
       .single();
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-    if (data) setLists((prev) => (prev.some((l) => l.id === data.id) ? prev : [...prev, data as List]));
+
+    setLists((prev) => {
+      const withoutTemp = prev.filter((l) => l.id !== tempId);
+      if (insertError || !data) return withoutTemp;
+      if (withoutTemp.some((l) => l.id === data.id)) return withoutTemp;
+      return [...withoutTemp, data as List];
+    });
+    if (insertError) setError(insertError.message);
   }
 
   async function handleRenameList(id: string, name: string) {
@@ -169,20 +191,36 @@ export default function BoardDetailPage() {
 
   async function handleAddCard(listId: string, title: string) {
     if (!supabase) return;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const tempId = crypto.randomUUID();
+    const now = new Date().toISOString();
     const position = nextPosition(cards.filter((c) => c.list_id === listId));
+    const optimistic: Card = {
+      id: tempId,
+      list_id: listId,
+      title,
+      description: null,
+      colour: null,
+      position,
+      is_done: false,
+      created_by: userIdRef.current,
+      created_at: now,
+      updated_at: now,
+    };
+    setCards((prev) => [...prev, optimistic]);
+
     const { data, error: insertError } = await supabase
       .from("cards")
-      .insert({ list_id: listId, title, position, created_by: user?.id ?? null })
+      .insert({ list_id: listId, title, position, created_by: userIdRef.current })
       .select()
       .single();
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-    if (data) setCards((prev) => (prev.some((c) => c.id === data.id) ? prev : [...prev, data as Card]));
+
+    setCards((prev) => {
+      const withoutTemp = prev.filter((c) => c.id !== tempId);
+      if (insertError || !data) return withoutTemp;
+      if (withoutTemp.some((c) => c.id === data.id)) return withoutTemp;
+      return [...withoutTemp, data as Card];
+    });
+    if (insertError) setError(insertError.message);
   }
 
   async function handleReorderCard(cardId: string, listId: string, position: number) {
@@ -215,18 +253,33 @@ export default function BoardDetailPage() {
 
   async function handleAddChecklistItem(cardId: string, text: string) {
     if (!supabase) return;
+    const tempId = crypto.randomUUID();
+    const now = new Date().toISOString();
     const position = nextPosition(checklist.filter((i) => i.card_id === cardId));
+    const optimistic: ChecklistItem = {
+      id: tempId,
+      card_id: cardId,
+      text,
+      is_checked: false,
+      position,
+      created_at: now,
+      updated_at: now,
+    };
+    setChecklist((prev) => [...prev, optimistic]);
+
     const { data, error: insertError } = await supabase
       .from("checklist_items")
       .insert({ card_id: cardId, text, position })
       .select()
       .single();
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-    if (data)
-      setChecklist((prev) => (prev.some((i) => i.id === data.id) ? prev : [...prev, data as ChecklistItem]));
+
+    setChecklist((prev) => {
+      const withoutTemp = prev.filter((i) => i.id !== tempId);
+      if (insertError || !data) return withoutTemp;
+      if (withoutTemp.some((i) => i.id === data.id)) return withoutTemp;
+      return [...withoutTemp, data as ChecklistItem];
+    });
+    if (insertError) setError(insertError.message);
   }
 
   async function handleToggleChecklistItem(id: string, checked: boolean) {

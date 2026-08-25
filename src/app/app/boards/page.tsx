@@ -1,28 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BoardsShell } from "@/components/boards/BoardsShell";
 import { subscribeToTable } from "@/lib/boards";
+import { hasCached, useCachedState } from "@/lib/pageCache";
 import type { Board, Card, List, Profile } from "@/types";
+
+const BOARDS_KEY = "boards-list-boards";
+const LISTS_KEY = "boards-list-lists";
+const CARDS_KEY = "boards-list-cards";
 
 export default function BoardsPage() {
   const supabase = createClient();
-  const [boards, setBoards] = useState<Board[]>([]);
-  const [lists, setLists] = useState<List[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
+  const [boards, setBoards] = useCachedState<Board[]>(BOARDS_KEY, []);
+  const [lists, setLists] = useCachedState<List[]>(LISTS_KEY, []);
+  const [cards, setCards] = useCachedState<Card[]>(CARDS_KEY, []);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !hasCached(BOARDS_KEY));
   const [error, setError] = useState<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!supabase) return;
-    setLoading(true);
     setError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    userIdRef.current = user?.id ?? null;
 
     const [{ data: boardRows, error: boardsError }, { data: listRows }, { data: cardRows }, { data: myProfile }] =
       await Promise.all([
@@ -38,7 +44,7 @@ export default function BoardsPage() {
     setCards((cardRows as Card[]) ?? []);
     if (myProfile) setProfile(myProfile as Profile);
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, setBoards, setLists, setCards]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount
@@ -55,23 +61,28 @@ export default function BoardsPage() {
       supabase.removeChannel(listsChannel);
       supabase.removeChannel(cardsChannel);
     };
-  }, [supabase]);
+  }, [supabase, setBoards, setLists, setCards]);
 
   async function handleCreateBoard(name: string) {
     if (!supabase) return;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const tempId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const optimistic: Board = { id: tempId, name, created_by: userIdRef.current, created_at: now, updated_at: now };
+    setBoards((prev) => [...prev, optimistic]);
+
     const { data, error: insertError } = await supabase
       .from("boards")
-      .insert({ name, created_by: user?.id ?? null })
+      .insert({ name, created_by: userIdRef.current })
       .select()
       .single();
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-    if (data) setBoards((prev) => (prev.some((b) => b.id === data.id) ? prev : [...prev, data as Board]));
+
+    setBoards((prev) => {
+      const withoutTemp = prev.filter((b) => b.id !== tempId);
+      if (insertError || !data) return withoutTemp;
+      if (withoutTemp.some((b) => b.id === data.id)) return withoutTemp;
+      return [...withoutTemp, data as Board];
+    });
+    if (insertError) setError(insertError.message);
   }
 
   async function handleDeleteBoard(id: string) {
