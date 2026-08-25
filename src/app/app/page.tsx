@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CalendarShell } from "@/components/CalendarShell";
+import { CalendarSkeleton } from "@/components/skeletons/CalendarSkeleton";
 import { hasCached, useCachedState } from "@/lib/pageCache";
 import type { EventFormValues } from "@/components/EventForm";
 import type { CalendarEvent, Profile } from "@/types";
@@ -13,7 +14,10 @@ const MEMBERS_KEY = "calendar-members";
 export default function AppCalendarPage() {
   const supabase = createClient();
   const [events, setEvents] = useCachedState<CalendarEvent[]>(EVENTS_KEY, []);
-  const [members, setMembers] = useCachedState<Pick<Profile, "id" | "name">[]>(MEMBERS_KEY, []);
+  const [members, setMembers] = useCachedState<Pick<Profile, "id" | "name">[]>(
+    MEMBERS_KEY,
+    [],
+  );
   const [profile, setProfile] = useState<Profile | null>(null);
   // Only block on a full-screen loader for a true cold start - if we already
   // have cached data from a previous visit, show it immediately and
@@ -31,12 +35,20 @@ export default function AppCalendarPage() {
     } = await supabase.auth.getUser();
     userIdRef.current = user?.id ?? null;
 
-    const [{ data: eventRows, error: eventsError }, { data: profileRows }, { data: myProfile }] =
-      await Promise.all([
-        supabase.from("events").select("*").order("start_time", { ascending: true }),
-        supabase.from("profiles").select("id, name").eq("approved", true),
-        user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
-      ]);
+    const [
+      { data: eventRows, error: eventsError },
+      { data: profileRows },
+      { data: myProfile },
+    ] = await Promise.all([
+      supabase
+        .from("events")
+        .select("*")
+        .order("start_time", { ascending: true }),
+      supabase.from("profiles").select("id, name").eq("approved", true),
+      user
+        ? supabase.from("profiles").select("*").eq("id", user.id).single()
+        : Promise.resolve({ data: null }),
+    ]);
 
     if (eventsError) {
       setError(eventsError.message);
@@ -66,7 +78,9 @@ export default function AppCalendarPage() {
               const row = payload.new as CalendarEvent;
               if (prev.some((e) => e.id === row.id)) return prev;
               return [...prev, row].sort(
-                (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+                (a, b) =>
+                  new Date(a.start_time).getTime() -
+                  new Date(b.start_time).getTime(),
               );
             }
             if (payload.eventType === "UPDATE") {
@@ -79,7 +93,7 @@ export default function AppCalendarPage() {
             }
             return prev;
           });
-        }
+        },
       )
       .subscribe();
 
@@ -123,9 +137,14 @@ export default function AppCalendarPage() {
   async function handleUpdate(id: string, values: EventFormValues) {
     if (!supabase) return;
     const previous = events;
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...values } : e)));
+    setEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...values } : e)),
+    );
 
-    const { error: updateError } = await supabase.from("events").update(values).eq("id", id);
+    const { error: updateError } = await supabase
+      .from("events")
+      .update(values)
+      .eq("id", id);
     if (updateError) {
       setError(updateError.message);
       setEvents(previous);
@@ -136,7 +155,10 @@ export default function AppCalendarPage() {
     if (!supabase) return;
     const previous = events;
     setEvents((prev) => prev.filter((e) => e.id !== id));
-    const { error: deleteError } = await supabase.from("events").delete().eq("id", id);
+    const { error: deleteError } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", id);
     if (deleteError) {
       setError(deleteError.message);
       setEvents(previous);
@@ -148,29 +170,27 @@ export default function AppCalendarPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted font-medium">Loading calendar…</p>
-      </div>
-    );
+    return <CalendarSkeleton />;
   }
 
   return (
-    <CalendarShell
-      userName={profile?.name || "Team member"}
-      userRole="Manager"
-      events={events}
-      members={members}
-      onCreate={handleCreate}
-      onUpdate={handleUpdate}
-      onDelete={handleDelete}
-      banner={
-        error ? (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
-            {error}
-          </div>
-        ) : undefined
-      }
-    />
+    <div className="reveal">
+      <CalendarShell
+        userName={profile?.name || "Team member"}
+        userRole="Manager"
+        events={events}
+        members={members}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        banner={
+          error ? (
+            <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
+              {error}
+            </div>
+          ) : undefined
+        }
+      />
+    </div>
   );
 }

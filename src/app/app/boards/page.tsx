@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BoardsShell } from "@/components/boards/BoardsShell";
+import { BoardsListSkeleton } from "@/components/skeletons/BoardsListSkeleton";
 import { subscribeToTable } from "@/lib/boards";
 import { hasCached, useCachedState } from "@/lib/pageCache";
 import type { Board, Card, List, Profile } from "@/types";
@@ -99,29 +100,27 @@ export default function BoardsPage() {
   if (!supabase) return null;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted font-medium">Loading boards…</p>
-      </div>
-    );
+    return <BoardsListSkeleton />;
   }
 
   return (
-    <BoardsShell
-      userName={profile?.name || "Team member"}
-      userRole="Manager"
-      boards={boards}
-      lists={lists}
-      cards={cards}
-      onCreateBoard={handleCreateBoard}
-      onDeleteBoard={handleDeleteBoard}
-      banner={
-        error ? (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
-            {error}
-          </div>
-        ) : undefined
-      }
-    />
+    <div className="reveal">
+      <BoardsShell
+        userName={profile?.name || "Team member"}
+        userRole="Manager"
+        boards={boards}
+        lists={lists}
+        cards={cards}
+        onCreateBoard={handleCreateBoard}
+        onDeleteBoard={handleDeleteBoard}
+        banner={
+          error ? (
+            <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
+              {error}
+            </div>
+          ) : undefined
+        }
+      />
+    </div>
   );
 }

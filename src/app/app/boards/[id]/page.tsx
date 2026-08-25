@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BoardShell } from "@/components/boards/BoardShell";
+import { BoardDetailSkeleton } from "@/components/skeletons/BoardDetailSkeleton";
 import { nextPosition, subscribeToTable } from "@/lib/boards";
 import { hasCached, readCached, useCachedState, writeCached } from "@/lib/pageCache";
 import type { Board, Card, ChecklistItem, List, Profile } from "@/types";
@@ -330,41 +331,39 @@ export default function BoardDetailPage() {
   }
 
   if (loading || !board) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted font-medium">Loading board…</p>
-      </div>
-    );
+    return <BoardDetailSkeleton />;
   }
 
   return (
-    <BoardShell
-      userName={profile?.name || "Team member"}
-      userRole="Manager"
-      board={board}
-      lists={lists}
-      cards={cards}
-      checklist={checklist}
-      onRenameBoard={handleRenameBoard}
-      onAddList={handleAddList}
-      onRenameList={handleRenameList}
-      onDeleteList={handleDeleteList}
-      onReorderList={handleReorderList}
-      onAddCard={handleAddCard}
-      onReorderCard={handleReorderCard}
-      onDeleteCard={handleDeleteCard}
-      onUpdateCard={handleUpdateCard}
-      onAddChecklistItem={handleAddChecklistItem}
-      onToggleChecklistItem={handleToggleChecklistItem}
-      onRemoveChecklistItem={handleRemoveChecklistItem}
-      onDeleteChecklist={handleDeleteChecklist}
-      banner={
-        error ? (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
-            {error}
-          </div>
-        ) : undefined
-      }
-    />
+    <div className="reveal">
+      <BoardShell
+        userName={profile?.name || "Team member"}
+        userRole="Manager"
+        board={board}
+        lists={lists}
+        cards={cards}
+        checklist={checklist}
+        onRenameBoard={handleRenameBoard}
+        onAddList={handleAddList}
+        onRenameList={handleRenameList}
+        onDeleteList={handleDeleteList}
+        onReorderList={handleReorderList}
+        onAddCard={handleAddCard}
+        onReorderCard={handleReorderCard}
+        onDeleteCard={handleDeleteCard}
+        onUpdateCard={handleUpdateCard}
+        onAddChecklistItem={handleAddChecklistItem}
+        onToggleChecklistItem={handleToggleChecklistItem}
+        onRemoveChecklistItem={handleRemoveChecklistItem}
+        onDeleteChecklist={handleDeleteChecklist}
+        banner={
+          error ? (
+            <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">
+              {error}
+            </div>
+          ) : undefined
+        }
+      />
+    </div>
   );
 }
