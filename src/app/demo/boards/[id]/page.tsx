@@ -53,28 +53,30 @@ export default function DemoBoardDetailPage() {
   const boardChecklist = checklist.filter((i) => cardIds.has(i.card_id));
 
   return (
-    <BoardShell
-      userName="Demo User"
-      userRole="Manager"
-      board={board}
-      lists={boardLists}
-      cards={boardCards}
-      checklist={boardChecklist}
-      onRenameBoard={(name) => renameBoard(board.id, name)}
-      onAddList={(name) => addList(board.id, name)}
-      onRenameList={renameList}
-      onDeleteList={deleteList}
-      onReorderList={reorderList}
-      onAddCard={addCard}
-      onReorderCard={reorderCard}
-      onDeleteCard={deleteCard}
-      onUpdateCard={updateCard}
-      onAddChecklistItem={addChecklistItem}
-      onToggleChecklistItem={toggleChecklistItem}
-      onRemoveChecklistItem={removeChecklistItem}
-      onDeleteChecklist={deleteChecklist}
-      banner={<BackToHomeBanner />}
-      basePath="/demo"
-    />
+    <div className="page-glide-in">
+      <BoardShell
+        userName="Demo User"
+        userRole="Manager"
+        board={board}
+        lists={boardLists}
+        cards={boardCards}
+        checklist={boardChecklist}
+        onRenameBoard={(name) => renameBoard(board.id, name)}
+        onAddList={(name) => addList(board.id, name)}
+        onRenameList={renameList}
+        onDeleteList={deleteList}
+        onReorderList={reorderList}
+        onAddCard={addCard}
+        onReorderCard={reorderCard}
+        onDeleteCard={deleteCard}
+        onUpdateCard={updateCard}
+        onAddChecklistItem={addChecklistItem}
+        onToggleChecklistItem={toggleChecklistItem}
+        onRemoveChecklistItem={removeChecklistItem}
+        onDeleteChecklist={deleteChecklist}
+        banner={<BackToHomeBanner />}
+        basePath="/demo"
+      />
+    </div>
   );
 }

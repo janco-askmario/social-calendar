@@ -89,3 +89,53 @@ body {
 .skeleton-exit {
   animation: skeleton-collapse 220ms cubic-bezier(0.4, 0, 1, 1) both;
 }
+
+/* Liquid-glass sliding pill: a translucent, blurred, accent-gradient
+   indicator that glides behind the active tab/segment. */
+.liquid-pill {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 45%),
+    linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  box-shadow:
+    0 8px 20px -6px rgba(124, 92, 240, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  transition:
+    left 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
+}
+
+@keyframes liquid-pill-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.liquid-pill-pop {
+  animation: liquid-pill-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes page-glide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.99);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-glide-in {
+  animation: page-glide-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

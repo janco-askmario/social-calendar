@@ -1,10 +1,14 @@
 "use client";
 
-import clsx from "clsx";
 import type { CalendarView } from "@/types";
 import { formatToolbarLabel } from "@/lib/calendar";
+import { LiquidPillTabs } from "@/components/LiquidPillTabs";
 
-const VIEWS: CalendarView[] = ["month", "week", "day"];
+const VIEWS: { value: CalendarView; label: string }[] = [
+  { value: "month", label: "Month" },
+  { value: "week", label: "Week" },
+  { value: "day", label: "Day" },
+];
 
 export function CalendarToolbar({
   view,
@@ -25,20 +29,7 @@ export function CalendarToolbar({
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-      <div className="flex items-center gap-1 bg-black/[0.03] rounded-xl p-1">
-        {VIEWS.map((v) => (
-          <button
-            key={v}
-            onClick={() => onViewChange(v)}
-            className={clsx(
-              "px-3.5 py-1.5 rounded-lg text-sm font-semibold capitalize transition",
-              view === v ? "bg-accent text-white" : "text-foreground/60 hover:text-foreground"
-            )}
-          >
-            {v}
-          </button>
-        ))}
-      </div>
+      <LiquidPillTabs items={VIEWS} value={view} onChange={onViewChange} />
 
       <div className="flex items-center gap-3">
         <button

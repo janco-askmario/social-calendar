@@ -335,7 +335,7 @@ export default function BoardDetailPage() {
   }
 
   return (
-    <div className="reveal">
+    <div className="page-glide-in">
       <BoardShell
         userName={profile?.name || "Team member"}
         userRole="Manager"

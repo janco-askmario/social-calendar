@@ -174,7 +174,7 @@ export default function AppCalendarPage() {
   }
 
   return (
-    <div className="reveal">
+    <div className="page-glide-in">
       <CalendarShell
         userName={profile?.name || "Team member"}
         userRole="Manager"

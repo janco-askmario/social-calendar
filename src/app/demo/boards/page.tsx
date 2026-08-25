@@ -8,18 +8,20 @@ export default function DemoBoardsPage() {
   const { boards, lists, cards, createBoard, deleteBoard } = useDemoBoards();
 
   return (
-    <BoardsShell
-      userName="Demo User"
-      userRole="Manager"
-      boards={boards}
-      lists={lists}
-      cards={cards}
-      onCreateBoard={(name) => {
-        createBoard(name);
-      }}
-      onDeleteBoard={deleteBoard}
-      banner={<BackToHomeBanner />}
-      basePath="/demo"
-    />
+    <div className="page-glide-in">
+      <BoardsShell
+        userName="Demo User"
+        userRole="Manager"
+        boards={boards}
+        lists={lists}
+        cards={cards}
+        onCreateBoard={(name) => {
+          createBoard(name);
+        }}
+        onDeleteBoard={deleteBoard}
+        banner={<BackToHomeBanner />}
+        basePath="/demo"
+      />
+    </div>
   );
 }

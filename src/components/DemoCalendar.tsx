@@ -52,16 +52,18 @@ export function DemoCalendar() {
   }
 
   return (
-    <CalendarShell
-      userName="Demo User"
-      userRole="Manager"
-      events={events}
-      members={DEMO_MEMBERS}
-      onCreate={handleCreate}
-      onUpdate={handleUpdate}
-      onDelete={handleDelete}
-      banner={<BackToHomeBanner />}
-      basePath="/demo"
-    />
+    <div className="page-glide-in">
+      <CalendarShell
+        userName="Demo User"
+        userRole="Manager"
+        events={events}
+        members={DEMO_MEMBERS}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        banner={<BackToHomeBanner />}
+        basePath="/demo"
+      />
+    </div>
   );
 }
