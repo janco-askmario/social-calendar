@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { BottomDock } from "@/components/BottomDock";
+import { usePinnedBoard } from "@/lib/usePinnedBoard";
 import { ListColumn } from "@/components/boards/ListColumn";
 import { CardModal } from "@/components/boards/CardModal";
 import { useDragGhost } from "@/lib/useDragGhost";
@@ -115,6 +116,21 @@ export function BoardShell({
   const [titleEditing, setTitleEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(board.name);
   const [hoverListId, setHoverListId] = useState<string | null>(null);
+  const { pinned, pin, unpin } = usePinnedBoard(basePath);
+  const isPinned = pinned?.id === board.id;
+  const dockActive = isPinned ? "pinned" : "boards";
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
+  const boardMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (boardMenuRef.current && !boardMenuRef.current.contains(e.target as Node)) {
+        setBoardMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const sortedLists = useMemo(() => sortByPosition(lists), [lists]);
   const cardsByList = useMemo(() => {
@@ -238,6 +254,36 @@ export function BoardShell({
                 {board.name || "Untitled board"}
               </h1>
             )}
+            {isPinned && (
+              <span className="text-accent" aria-label="Pinned" title="Pinned">
+                📌
+              </span>
+            )}
+
+            <div className="relative ml-auto" ref={boardMenuRef}>
+              <button
+                type="button"
+                onClick={() => setBoardMenuOpen((o) => !o)}
+                className="w-7 h-7 rounded-md flex items-center justify-center text-foreground/50 hover:bg-black/5 transition"
+                aria-label="Board menu"
+              >
+                ⋯
+              </button>
+              {boardMenuOpen && (
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-black/5 p-1.5 z-20">
+                  <button
+                    onClick={() => {
+                      if (isPinned) unpin();
+                      else pin({ id: board.id, name: board.name || "Untitled board" });
+                      setBoardMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-semibold text-foreground/80 hover:bg-black/5 rounded-lg px-3 py-2"
+                  >
+                    {isPinned ? "Unpin board" : "Pin board"}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-3 items-start" style={{ maxHeight: "calc(100vh - 260px)" }}>
@@ -345,7 +391,7 @@ export function BoardShell({
         />
       )}
 
-      <BottomDock active="boards" basePath={basePath} />
+      <BottomDock active={dockActive} basePath={basePath} pinnedBoard={pinned} />
     </div>
   );
 }

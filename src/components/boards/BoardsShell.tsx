@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { BottomDock } from "@/components/BottomDock";
 import { BoardCard } from "@/components/boards/BoardCard";
+import { usePinnedBoard } from "@/lib/usePinnedBoard";
 import type { Board, Card, List } from "@/types";
 
 export function BoardsShell({
@@ -32,6 +33,18 @@ export function BoardsShell({
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const { pinned, pin, unpin } = usePinnedBoard(basePath);
+
+  useEffect(() => {
+    if (!pinned) return;
+    const current = boards.find((b) => b.id === pinned.id);
+    if (!current) {
+      unpin();
+    } else if (current.name !== pinned.name) {
+      pin({ id: current.id, name: current.name || "Untitled board" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the board list or pin identity changes, not on every pin()/unpin() call
+  }, [boards, pinned?.id]);
 
   async function submit() {
     const trimmed = name.trim() || "Untitled board";
@@ -113,13 +126,17 @@ export function BoardsShell({
                 cardCount={cards.filter((c) => lists.some((l) => l.board_id === board.id && l.id === c.list_id)).length}
                 basePath={basePath}
                 onDelete={onDeleteBoard ? () => onDeleteBoard(board.id) : undefined}
+                isPinned={pinned?.id === board.id}
+                onTogglePin={() =>
+                  pinned?.id === board.id ? unpin() : pin({ id: board.id, name: board.name || "Untitled board" })
+                }
               />
             ))}
           </div>
         )}
       </div>
 
-      <BottomDock active="boards" basePath={basePath} onSelect={onSelectTab} />
+      <BottomDock active="boards" basePath={basePath} onSelect={onSelectTab} pinnedBoard={pinned} />
     </div>
   );
 }

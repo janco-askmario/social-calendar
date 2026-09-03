@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { BottomDock } from "@/components/BottomDock";
+import { usePinnedBoard } from "@/lib/usePinnedBoard";
 import { CalendarToolbar } from "@/components/CalendarToolbar";
 import { CalendarGrid } from "@/components/CalendarGrid";
 import { EventModal } from "@/components/EventModal";
@@ -42,6 +43,7 @@ export function CalendarShell({
   const [modalState, setModalState] = useState<
     { mode: "create"; date?: Date } | { mode: "edit"; event: CalendarEvent } | null
   >(null);
+  const { pinned } = usePinnedBoard(basePath);
 
   const filteredEvents = useMemo(
     () => events.filter((e) => selectedPlatforms.has(e.platform)),
@@ -115,7 +117,7 @@ export function CalendarShell({
         />
       )}
 
-      <BottomDock active="calendar" basePath={basePath} onSelect={onSelectTab} />
+      <BottomDock active="calendar" basePath={basePath} onSelect={onSelectTab} pinnedBoard={pinned} />
     </div>
   );
 }

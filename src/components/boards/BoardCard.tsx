@@ -10,12 +10,16 @@ export function BoardCard({
   listCount,
   basePath = "/app",
   onDelete,
+  isPinned,
+  onTogglePin,
 }: {
   board: Board;
   cardCount: number;
   listCount: number;
   basePath?: string;
   onDelete?: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -40,15 +44,20 @@ export function BoardCard({
             {board.name.trim().slice(0, 1).toUpperCase() || "B"}
           </span>
         </div>
-        <h3 className="text-sm font-bold text-foreground truncate group-hover:text-accent transition pr-6">
-          {board.name || "Untitled board"}
+        <h3 className="text-sm font-bold text-foreground truncate group-hover:text-accent transition pr-6 flex items-center gap-1.5">
+          {isPinned && (
+            <span className="text-accent shrink-0" aria-label="Pinned" title="Pinned">
+              📌
+            </span>
+          )}
+          <span className="truncate">{board.name || "Untitled board"}</span>
         </h3>
         <p className="mt-1 text-xs text-muted">
           {listCount} {listCount === 1 ? "list" : "lists"} · {cardCount} {cardCount === 1 ? "card" : "cards"}
         </p>
       </Link>
 
-      {onDelete && (
+      {(onDelete || onTogglePin) && (
         <div className="absolute top-4 right-4" ref={menuRef}>
           <button
             type="button"
@@ -86,7 +95,7 @@ export function BoardCard({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onDelete();
+                        onDelete?.();
                       }}
                       className="flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
                     >
@@ -95,16 +104,33 @@ export function BoardCard({
                   </div>
                 </div>
               ) : (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setConfirmingDelete(true);
-                  }}
-                  className="block w-full text-left text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg px-3 py-2"
-                >
-                  Delete board
-                </button>
+                <>
+                  {onTogglePin && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onTogglePin();
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left text-sm font-semibold text-foreground/80 hover:bg-black/5 rounded-lg px-3 py-2"
+                    >
+                      {isPinned ? "Unpin board" : "Pin board"}
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setConfirmingDelete(true);
+                      }}
+                      className="block w-full text-left text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg px-3 py-2"
+                    >
+                      Delete board
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
