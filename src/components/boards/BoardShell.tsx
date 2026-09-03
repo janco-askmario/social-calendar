@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { BottomDock } from "@/components/BottomDock";
 import { ListColumn } from "@/components/boards/ListColumn";
 import { CardModal } from "@/components/boards/CardModal";
 import { useDragGhost } from "@/lib/useDragGhost";
@@ -203,10 +204,10 @@ export function BoardShell({
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 py-6">
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 pt-6 pb-28">
       <div className="mx-auto flex flex-col gap-5">
         <div className="bg-panel rounded-[38px] border border-black/5 shadow-sm p-6 min-w-0">
-          <Header name={userName} role={userRole} active="boards" basePath={basePath} />
+          <Header name={userName} role={userRole} />
           {banner}
 
           <div className="flex items-center gap-3 mb-5">
@@ -343,6 +344,8 @@ export function BoardShell({
           }}
         />
       )}
+
+      <BottomDock active="boards" basePath={basePath} />
     </div>
   );
 }

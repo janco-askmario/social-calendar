@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Header } from "@/components/Header";
+import { BottomDock } from "@/components/BottomDock";
 import { BoardCard } from "@/components/boards/BoardCard";
 import type { Board, Card, List } from "@/types";
 
@@ -43,9 +44,9 @@ export function BoardsShell({
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 py-6">
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 pt-6 pb-28">
       <div className="mx-auto bg-panel rounded-[38px] border border-black/5 shadow-sm p-6">
-        <Header name={userName} role={userRole} active="boards" basePath={basePath} />
+        <Header name={userName} role={userRole} />
         {banner}
 
         <div className="flex items-center justify-between mb-5">
@@ -115,6 +116,8 @@ export function BoardsShell({
           </div>
         )}
       </div>
+
+      <BottomDock active="boards" basePath={basePath} />
     </div>
   );
 }

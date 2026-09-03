@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
+import { BottomDock } from "@/components/BottomDock";
 import { CalendarToolbar } from "@/components/CalendarToolbar";
 import { CalendarGrid } from "@/components/CalendarGrid";
 import { EventModal } from "@/components/EventModal";
@@ -60,7 +61,7 @@ export function CalendarShell({
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 py-6">
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 pt-6 pb-28">
       <div className="mx-auto flex flex-col lg:flex-row gap-5">
         <Sidebar
           events={events}
@@ -71,7 +72,7 @@ export function CalendarShell({
         />
 
         <main className="flex-1 bg-panel rounded-[38px] border border-black/5 shadow-sm p-6 min-w-0">
-          <Header name={userName} role={userRole} basePath={basePath} />
+          <Header name={userName} role={userRole} />
           {banner}
           <CalendarToolbar
             view={view}
@@ -111,6 +112,8 @@ export function CalendarShell({
           onDelete={onDelete}
         />
       )}
+
+      <BottomDock active="calendar" basePath={basePath} />
     </div>
   );
 }
