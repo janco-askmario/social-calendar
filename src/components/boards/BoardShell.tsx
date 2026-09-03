@@ -25,8 +25,17 @@ import type { Board, Card, ChecklistItem, EventColour, List } from "@/types";
  * cursor is outside every lane (e.g. dropped in the gap past the last list,
  * or well below the row).
  */
-function findListCol(clientX: number, clientY: number): HTMLElement | null {
-  const cols = Array.from(document.querySelectorAll<HTMLElement>("[data-list-col]"));
+function findListCol(clientX: number, clientY: number, excludeListId?: string | null): HTMLElement | null {
+  // The dragged list's own column stays mounted (just opacity-0, not removed
+  // from layout) for the ghost/fade-out treatment, so it still occupies its
+  // original lane the whole time. Without excluding it, dropping anywhere
+  // still inside that leftover lane (a short drag, or nudging back toward
+  // where you started) resolves the target as "yourself" - the id-match
+  // guard below then skips positioning entirely and silently appends the
+  // list to the end instead of using the actual drop position.
+  const cols = Array.from(document.querySelectorAll<HTMLElement>("[data-list-col]")).filter(
+    (col) => col.dataset.listId !== excludeListId
+  );
   if (cols.length === 0) return null;
 
   let rowTop = Infinity;
@@ -188,7 +197,7 @@ export function BoardShell({
 
   const listDrag = useDragGhost({
     onDragMove: (x, y) => {
-      const col = findListCol(x, y);
+      const col = findListCol(x, y, listDrag.draggingId);
       setHoverListId(col?.dataset.listId ?? null);
     },
     onDrop: (id, x, y) => {
@@ -196,7 +205,7 @@ export function BoardShell({
       // The list being dragged may have been deleted by another user
       // mid-drag - bail rather than writing a stale reference back.
       if (!sortedLists.some((l) => l.id === id)) return;
-      const col = findListCol(x, y);
+      const col = findListCol(x, y, id);
       const siblings = sortedLists.filter((l) => l.id !== id);
       let index = siblings.length;
       if (col && col.dataset.listId && col.dataset.listId !== id) {
