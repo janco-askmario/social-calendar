@@ -206,18 +206,16 @@ export function BoardShell({
       // mid-drag - bail rather than writing a stale reference back.
       if (!sortedLists.some((l) => l.id === id)) return;
       const col = findListCol(x, y, id);
-      const siblings = sortedLists.filter((l) => l.id !== id);
-      let index = siblings.length;
-      if (col && col.dataset.listId && col.dataset.listId !== id) {
-        const idx = siblings.findIndex((l) => l.id === col.dataset.listId);
-        if (idx !== -1) {
-          const rect = col.getBoundingClientRect();
-          const before = x < rect.left + rect.width / 2;
-          index = before ? idx : idx + 1;
-        }
-      }
-      const position = positionBetween(siblings[index - 1]?.position, siblings[index]?.position);
-      onReorderList(id, position);
+      const targetId = col?.dataset.listId;
+      if (!targetId || targetId === id) return;
+      // A straight swap: whichever list you drop onto trades positions with
+      // the one you're dragging, wherever it is on the board - not an
+      // insert-before/after based on which half of the target you land on.
+      const dragged = sortedLists.find((l) => l.id === id);
+      const target = sortedLists.find((l) => l.id === targetId);
+      if (!dragged || !target) return;
+      onReorderList(id, target.position);
+      onReorderList(targetId, dragged.position);
     },
   });
 
