@@ -70,7 +70,7 @@ export function ListHeader({
               }
             }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 rounded-lg border border-accent/40 bg-white px-2 py-1 text-sm font-bold text-foreground outline-none"
+            className="flex-1 min-w-0 rounded-lg border border-accent/40 bg-white px-2 py-1 text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-accent/25"
           />
         ) : (
           <button

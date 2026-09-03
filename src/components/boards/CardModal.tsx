@@ -83,7 +83,7 @@ export function CardModal({
                       setTitleEditing(false);
                     }
                   }}
-                  className="flex-1 min-w-0 rounded-lg border border-accent/40 bg-white px-2.5 py-1.5 text-lg font-bold text-foreground outline-none"
+                  className="flex-1 min-w-0 rounded-lg border border-accent/40 bg-white px-2.5 py-1.5 text-lg font-bold text-foreground outline-none focus:ring-2 focus:ring-accent/25"
                 />
               ) : (
                 <h2

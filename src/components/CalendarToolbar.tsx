@@ -60,7 +60,7 @@ export function CalendarToolbar({
       <div className="flex items-center gap-2">
         <button
           onClick={onAdd}
-          className="rounded-xl bg-accent text-white font-semibold text-sm px-4 py-2 hover:bg-accent-2 transition"
+          className="btn-spring rounded-xl bg-accent text-white font-semibold text-sm px-4 py-2 hover:bg-accent-2"
         >
           + Add
         </button>

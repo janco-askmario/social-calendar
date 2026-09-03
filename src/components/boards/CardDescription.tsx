@@ -38,7 +38,7 @@ export function CardDescription({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Add a more detailed description…"
-            className="w-full rounded-xl border border-accent/40 bg-white px-3 py-2.5 text-sm text-foreground outline-none resize-y"
+            className="w-full rounded-xl border border-accent/40 bg-white px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/25 resize-y"
           />
           <div className="flex items-center gap-2">
             <button

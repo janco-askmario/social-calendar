@@ -73,7 +73,7 @@ export function CalendarShell({
           members={members}
         />
 
-        <main className="flex-1 bg-panel rounded-[38px] border border-black/5 shadow-sm p-6 min-w-0">
+        <main className="flex-1 bg-panel rounded-[38px] border border-black/5 shadow-panel p-6 min-w-0">
           <Header name={userName} role={userRole} />
           {banner}
           <CalendarToolbar

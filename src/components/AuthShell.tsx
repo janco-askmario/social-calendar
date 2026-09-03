@@ -21,7 +21,7 @@ export function AuthShell({
         >
           ← Social Media Calendar
         </Link>
-        <div className="bg-panel rounded-[32px] shadow-sm border border-black/5 p-8">
+        <div className="bg-panel rounded-[32px] shadow-panel border border-black/5 p-8">
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
           <div className="mt-6">{children}</div>

@@ -129,7 +129,7 @@ export function ChecklistSection({
               }
             }}
             placeholder="Add an item…"
-            className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-1.5 text-sm text-foreground outline-none"
+            className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/25"
           />
           <div className="flex items-center gap-2">
             <button

@@ -101,7 +101,7 @@ export function ListColumn({
                 }
               }}
               placeholder="Enter a title for this card…"
-              className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-2 text-sm text-foreground outline-none resize-none"
+              className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/25 resize-none"
             />
             <div className="flex items-center gap-2">
               <button

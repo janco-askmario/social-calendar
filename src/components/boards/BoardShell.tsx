@@ -206,7 +206,7 @@ export function BoardShell({
   return (
     <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 pt-6 pb-28">
       <div className="mx-auto flex flex-col gap-5">
-        <div className="bg-panel rounded-[38px] border border-black/5 shadow-sm p-6 min-w-0">
+        <div className="bg-panel rounded-[38px] border border-black/5 shadow-panel p-6 min-w-0">
           <Header name={userName} role={userRole} />
           {banner}
 
@@ -228,7 +228,7 @@ export function BoardShell({
                     setTitleEditing(false);
                   }
                 }}
-                className="rounded-lg border border-accent/40 bg-white px-2.5 py-1 text-lg font-extrabold text-foreground outline-none"
+                className="rounded-lg border border-accent/40 bg-white px-2.5 py-1 text-lg font-extrabold text-foreground outline-none focus:ring-2 focus:ring-accent/25"
               />
             ) : (
               <h1
@@ -280,7 +280,7 @@ export function BoardShell({
                       }
                     }}
                     placeholder="Enter list name…"
-                    className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-2 text-sm text-foreground outline-none"
+                    className="w-full rounded-lg border border-accent/40 bg-white px-2.5 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/25"
                   />
                   <div className="flex items-center gap-2">
                     <button

@@ -47,7 +47,7 @@ export function BoardsShell({
 
   return (
     <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-10 pt-6 pb-28">
-      <div className="mx-auto bg-panel rounded-[38px] border border-black/5 shadow-sm p-6">
+      <div className="mx-auto bg-panel rounded-[38px] border border-black/5 shadow-panel p-6">
         <Header name={userName} role={userRole} />
         {banner}
 
@@ -56,7 +56,7 @@ export function BoardsShell({
           {!creating && (
             <button
               onClick={() => setCreating(true)}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-2 transition"
+              className="btn-spring rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-2"
             >
               + New board
             </button>
@@ -77,7 +77,7 @@ export function BoardsShell({
                 }
               }}
               placeholder="Board name…"
-              className="flex-1 rounded-xl border border-black/10 px-3.5 py-2 text-sm text-foreground outline-none focus:border-accent"
+              className="flex-1 rounded-xl border border-black/10 px-3.5 py-2 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <button
               onClick={submit}
