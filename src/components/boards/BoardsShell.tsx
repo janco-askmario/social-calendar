@@ -16,6 +16,7 @@ export function BoardsShell({
   onCreateBoard,
   onDeleteBoard,
   basePath = "/app",
+  onSelectTab,
 }: {
   userName: string;
   userRole: string;
@@ -26,6 +27,7 @@ export function BoardsShell({
   onCreateBoard: (name: string) => Promise<string | void> | void;
   onDeleteBoard?: (id: string) => void;
   basePath?: string;
+  onSelectTab?: (tab: "calendar" | "boards") => void;
 }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -117,7 +119,7 @@ export function BoardsShell({
         )}
       </div>
 
-      <BottomDock active="boards" basePath={basePath} />
+      <BottomDock active="boards" basePath={basePath} onSelect={onSelectTab} />
     </div>
   );
 }

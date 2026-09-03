@@ -23,6 +23,7 @@ export function CalendarShell({
   onDelete,
   banner,
   basePath = "/app",
+  onSelectTab,
 }: {
   userName: string;
   userRole: string;
@@ -33,6 +34,7 @@ export function CalendarShell({
   onDelete: (id: string) => Promise<void> | void;
   banner?: React.ReactNode;
   basePath?: string;
+  onSelectTab?: (tab: "calendar" | "boards") => void;
 }) {
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(new Date());
@@ -113,7 +115,7 @@ export function CalendarShell({
         />
       )}
 
-      <BottomDock active="calendar" basePath={basePath} />
+      <BottomDock active="calendar" basePath={basePath} onSelect={onSelectTab} />
     </div>
   );
 }

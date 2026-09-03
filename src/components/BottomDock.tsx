@@ -35,13 +35,29 @@ function BoardsIcon() {
 
 /**
  * A floating bottom-dock nav (Trello-app style) for switching between the
- * calendar and boards. Same liquid-glass sliding pill mechanics as
- * LiquidNavLinks, restyled for a dark floating dock rather than the light
- * in-panel header pill it replaces.
+ * calendar and boards. Same liquid-glass sliding pill mechanics used
+ * elsewhere, restyled for a dark floating dock.
+ *
+ * Two modes:
+ *  - Real navigation (default): renders <Link>s to `${basePath}` /
+ *    `${basePath}/boards`, for pages that are genuinely separate routes
+ *    (e.g. an individual board's detail page).
+ *  - Local tab switch: when `onSelect` is provided, clicks call it instead
+ *    of navigating - used by the merged calendar/boards shell so switching
+ *    is an instant client-side state change with no Next.js navigation (and
+ *    therefore no repeat of the auth/approval check on every switch).
  */
-export function BottomDock({ active, basePath = "/app" }: { active: DockTab; basePath?: string }) {
+export function BottomDock({
+  active,
+  basePath = "/app",
+  onSelect,
+}: {
+  active: DockTab;
+  basePath?: string;
+  onSelect?: (tab: DockTab) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const linkRefs = useRef<Partial<Record<DockTab, HTMLAnchorElement | null>>>({});
+  const itemRefs = useRef<Partial<Record<DockTab, HTMLElement | null>>>({});
   const [pill, setPill] = useState<PillRect | null>(null);
   // Portal to document.body: any ancestor with a `transform` (e.g. the
   // page-glide-in mount animation) creates a new containing block for
@@ -61,11 +77,11 @@ export function BottomDock({ active, basePath = "/app" }: { active: DockTab; bas
   useLayoutEffect(() => {
     function measure() {
       const container = containerRef.current;
-      const link = linkRefs.current[active];
-      if (!container || !link) return;
+      const item = itemRefs.current[active];
+      if (!container || !item) return;
       const containerRect = container.getBoundingClientRect();
-      const linkRect = link.getBoundingClientRect();
-      setPill({ left: linkRect.left - containerRect.left, width: linkRect.width });
+      const itemRect = item.getBoundingClientRect();
+      setPill({ left: itemRect.left - containerRect.left, width: itemRect.width });
     }
     measure();
     window.addEventListener("resize", measure);
@@ -73,6 +89,12 @@ export function BottomDock({ active, basePath = "/app" }: { active: DockTab; bas
   }, [active, mounted]);
 
   if (!mounted) return null;
+
+  const itemClassName = (value: DockTab) =>
+    clsx(
+      "relative z-10 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200",
+      active === value ? "text-white" : "text-white/50 hover:text-white/80"
+    );
 
   return createPortal(
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40">
@@ -86,22 +108,34 @@ export function BottomDock({ active, basePath = "/app" }: { active: DockTab; bas
             style={{ left: pill.left, width: pill.width }}
           />
         )}
-        {items.map(({ value, label, href, Icon }) => (
-          <Link
-            key={value}
-            href={href}
-            ref={(el) => {
-              linkRefs.current[value] = el;
-            }}
-            className={clsx(
-              "relative z-10 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200",
-              active === value ? "text-white" : "text-white/50 hover:text-white/80"
-            )}
-          >
-            <Icon />
-            {label}
-          </Link>
-        ))}
+        {items.map(({ value, label, href, Icon }) =>
+          onSelect ? (
+            <button
+              key={value}
+              type="button"
+              ref={(el) => {
+                itemRefs.current[value] = el;
+              }}
+              onClick={() => onSelect(value)}
+              className={itemClassName(value)}
+            >
+              <Icon />
+              {label}
+            </button>
+          ) : (
+            <Link
+              key={value}
+              href={href}
+              ref={(el) => {
+                itemRefs.current[value] = el;
+              }}
+              className={itemClassName(value)}
+            >
+              <Icon />
+              {label}
+            </Link>
+          )
+        )}
       </nav>
     </div>,
     document.body
