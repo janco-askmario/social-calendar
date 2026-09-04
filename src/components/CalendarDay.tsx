@@ -38,6 +38,7 @@ export function CalendarDay({
       onClick={() => onCreate(day)}
       className={clsx(
         "rounded-2xl p-2 flex flex-col gap-1 min-h-[100px] transition-all border cursor-pointer",
+        "hover:border-accent/30 hover:shadow-[0_6px_16px_-8px_rgba(124,92,240,0.35)] hover:-translate-y-0.5",
         isCurrentMonth ? "bg-white" : "bg-black/[0.02] text-foreground/40",
         isToday ? "border-accent/50" : "border-transparent",
         isDropTarget && "ring-2 ring-accent/40 scale-[1.02]"
