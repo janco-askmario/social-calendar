@@ -35,9 +35,9 @@ export function CalendarDay({
     <div
       data-day-cell
       data-day={day.toISOString()}
-      onDoubleClick={() => onCreate(day)}
+      onClick={() => onCreate(day)}
       className={clsx(
-        "rounded-2xl p-2 flex flex-col gap-1 min-h-[100px] transition-all border",
+        "rounded-2xl p-2 flex flex-col gap-1 min-h-[100px] transition-all border cursor-pointer",
         isCurrentMonth ? "bg-white" : "bg-black/[0.02] text-foreground/40",
         isToday ? "border-accent/50" : "border-transparent",
         isDropTarget && "ring-2 ring-accent/40 scale-[1.02]"
@@ -68,7 +68,10 @@ export function CalendarDay({
         ))}
         {overflow > 0 && (
           <button
-            onClick={() => visible[0] && onSelectEvent(visible[0])}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (visible[0]) onSelectEvent(visible[0]);
+            }}
             className="text-[11px] font-semibold text-muted text-left px-1"
           >
             +{overflow} more
